@@ -15,13 +15,13 @@ public class DriveTrain {
 	
 	public DriveTrain()
 	{
-		lfDrive = new TalonSRX(20);
-		lmDrive = new TalonSRX(21);
-		lbDrive = new TalonSRX(22);
+		lfDrive = new TalonSRX(40);
+		lmDrive = new TalonSRX(41);
+		lbDrive = new TalonSRX(42);
 		
-		rfDrive = new TalonSRX(23);
-		rmDrive = new TalonSRX(24);
-		rbDrive = new TalonSRX(25);
+		rfDrive = new TalonSRX(43);
+		rmDrive = new TalonSRX(44);
+		rbDrive = new TalonSRX(45);
 		
 		lmDrive.follow(lfDrive);
 		lbDrive.follow(lfDrive);

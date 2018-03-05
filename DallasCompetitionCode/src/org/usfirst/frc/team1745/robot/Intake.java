@@ -8,20 +8,21 @@ public class Intake {
 	
 	public Intake()
 	{
-		lIntake = new TalonSRX(30);
-		rIntake = new TalonSRX(31);
+		lIntake = new TalonSRX(50);
+		rIntake = new TalonSRX(51);
+		
 	}
 	
 	public void intake()
 	{
 		lIntake.set(ControlMode.PercentOutput, -1);
-		rIntake.set(ControlMode.PercentOutput, 1);
+		rIntake.set(ControlMode.PercentOutput, -1);
 	}
 	
 	public void outtake()
 	{
-		lIntake.set(ControlMode.PercentOutput, 1);
-		rIntake.set(ControlMode.PercentOutput, -1);
+		lIntake.set(ControlMode.PercentOutput, .3);
+		rIntake.set(ControlMode.PercentOutput, .3);
 	}
 
 	public void rest() {

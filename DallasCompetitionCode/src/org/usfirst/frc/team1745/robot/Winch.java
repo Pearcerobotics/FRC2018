@@ -15,12 +15,13 @@ public class Winch {
 	
 	public Winch()
 	{
-		lWinch = new TalonSRX(26);
-		rWinch = new TalonSRX(27);
+		lWinch = new TalonSRX(46);
+		rWinch = new TalonSRX(47);
 		
 		lWinch.follow(rWinch);
 		
 		lWinch.setInverted(true);
+		rWinch.setInverted(true);
 		holder = new Servo(0);
 	}
 	
@@ -33,10 +34,17 @@ public class Winch {
 		}
 	}
 	
-	public void deploy()
+	public long deploy()
 	{
-		holder.set(0);
+		holder.set(1);
 		deployed = true;
+		return System.currentTimeMillis();
+	}
+
+	public void off()
+	{
+		// TODO Auto-generated method stub
+		holder.set(.5);
 	}
 	
 }

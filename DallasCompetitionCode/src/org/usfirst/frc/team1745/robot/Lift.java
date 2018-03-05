@@ -2,6 +2,7 @@ package org.usfirst.frc.team1745.robot;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
 public class Lift {
@@ -11,20 +12,26 @@ public class Lift {
 	
 	public Lift()
 	{
-		lLift = new TalonSRX(28);
-		rLift = new TalonSRX(29);
+		lLift = new TalonSRX(48);
+		rLift = new TalonSRX(49);
 		
 		lLift.follow(rLift);
 		
-		lLift.setInverted(false);
+		lLift.setInverted(true);
 		
 		rLift.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
-		rLift.setSensorPhase(true);
+		rLift.setSensorPhase(false);
 		rLift.setInverted(true);
 		
 		rLift.config_kP(0, .7, 10);
 		rLift.config_kI(0, .000006, 10);
 		rLift.config_kD(0, .3, 10);
+		
+		rLift.configForwardSoftLimitThreshold(25000, 10);
+		rLift.configForwardSoftLimitEnable(true, 10);
+		
+		rLift.configReverseSoftLimitThreshold(-20, 10);
+		rLift.configReverseSoftLimitEnable(true, 10);
 	}
 	
 	public void setPos(int pos)
@@ -35,6 +42,12 @@ public class Lift {
 	public void control()
 	{
 		rLift.set(ControlMode.Position, currentSetPos);
+		if(rLift.getSelectedSensorPosition(0) > 24500)
+		{
+			rLift.set(ControlMode.PercentOutput, 0);
+			rLift.setNeutralMode(NeutralMode.Brake);
+			lLift.setNeutralMode(NeutralMode.Brake);
+		}
 	}
 
 	public int getPos() {
