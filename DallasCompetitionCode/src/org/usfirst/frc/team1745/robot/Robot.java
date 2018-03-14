@@ -8,6 +8,8 @@
 package org.usfirst.frc.team1745.robot;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import com.kauailabs.navx.frc.AHRS;
 
@@ -15,7 +17,6 @@ import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -40,6 +41,7 @@ public class Robot extends TimedRobot
 	
 	long deployTime = 0;
 	
+	double lastVel = 0;
 
 	long start;
 
@@ -50,7 +52,7 @@ public class Robot extends TimedRobot
 	String fieldLayout;
 
 	Joystick lJoy = new Joystick(0), rJoy = new Joystick(1), sJoy = new Joystick(2);
-
+	
 	/**
 	 * This function is run when the robot is first started up and should be used
 	 * for any initialization code.
@@ -58,7 +60,9 @@ public class Robot extends TimedRobot
 	@Override
 	public void robotInit()
 	{
-		CameraServer.getInstance().startAutomaticCapture();
+		//CameraServer.getInstance().startAutomaticCapture(0);
+		//CameraServer.getInstance().startAutomaticCapture(1);
+		
 		s_chooser.addObject("Right", "R");
 		s_chooser.addObject("Left", "L");
 		s_chooser.addDefault("Center", "C");
@@ -80,29 +84,24 @@ public class Robot extends TimedRobot
 		intake = new Intake();
 		winch = new Winch();
 
-		SmartDashboard.putData(s_chooser);
-		SmartDashboard.putData(t_chooser);
-		SmartDashboard.putData(p_chooser);
 
 		navX = new AHRS(I2C.Port.kMXP);
 		
 		CameraServer.getInstance().startAutomaticCapture();
-		arm.arm.setSelectedSensorPosition(-150, 0, 10);
-
+		CameraServer.getInstance().startAutomaticCapture();
+		
 	}
 
 	public void disabledInit()
 	{
-		SmartDashboard.putData(s_chooser);
-		SmartDashboard.putData(t_chooser);
-		SmartDashboard.putData(p_chooser);
+		
 	}
 
 	public void disabledPeriodic()
 	{
-		SmartDashboard.putData(s_chooser);
-		SmartDashboard.putData(t_chooser);
-		SmartDashboard.putData(p_chooser);
+//		SmartDashboard.putData(s_chooser);
+//		SmartDashboard.putData(t_chooser);
+//		SmartDashboard.putData(p_chooser);
 
 		fieldLayout = DriverStation.getInstance().getGameSpecificMessage();
 		// System.out.println(fieldLayout);
@@ -130,11 +129,8 @@ public class Robot extends TimedRobot
 		} else if (scale)
 		{
 			arm.setPos(600);
-			lift.setPos(23000);
+			lift.setPos(18000);
 		}
-
-		arm.setPos(300);
-		lift.setPos(12000);
 		navX.zeroYaw();
 
 	}
@@ -152,7 +148,7 @@ public class Robot extends TimedRobot
 		double heading = Pathfinder.r2d(lEncoder.getHeading());
 
 		double angleDifference = Pathfinder.boundHalfDegrees(heading - gyro);
-		double turn = 65 * (1 / 80) * angleDifference;
+		double turn = 100 * (1 / 80) * angleDifference;
 
 		driveTrain.setDrive(l + turn, r - turn);
 
@@ -178,14 +174,14 @@ public class Robot extends TimedRobot
 	public void teleopPeriodic()
 	{
 
-		if (rJoy.getTrigger())
+		if (!rJoy.getTrigger())
 		{
 			driveTrain.setDrive(-lJoy.getY(), -rJoy.getY());
 		} else
 		{
 			driveTrain.setDrive(-lJoy.getY() / 2, -rJoy.getY() / 2);
 		}
-
+		
 		controlArm();
 		controlLift();
 		controlIntake();
@@ -201,7 +197,10 @@ public class Robot extends TimedRobot
 		}
 
 		SmartDashboard.putNumber("LiftPos", lift.rLift.getSelectedSensorPosition(0));
+		SmartDashboard.putNumber("LiftSetPos", lift.currentSetPos);
+		
 		SmartDashboard.putNumber("ArmPos", arm.arm.getSelectedSensorPosition(0));
+		
 	}
 
 	/**
@@ -216,7 +215,7 @@ public class Robot extends TimedRobot
 	{
 		if (Math.abs(sJoy.getRawAxis(5)) > .2)
 		{
-			arm.setPos((int) (arm.getPos() - sJoy.getRawAxis(5) * 20));
+			arm.setPos((int) (arm.getPos() - sJoy.getRawAxis(5) * 22));
 		}
 
 		if (sJoy.getRawButton(3))
@@ -237,7 +236,7 @@ public class Robot extends TimedRobot
 
 		boolean armFailed = arm.control(-sJoy.getRawAxis(5));
 		
-		SmartDashboard.putBoolean("Arm status", armFailed);
+		//SmartDashboard.putBoolean("Arm status", armFailed);
 		
 		
 	}
@@ -246,7 +245,7 @@ public class Robot extends TimedRobot
 	{
 		if (Math.abs(sJoy.getRawAxis(1)) > .2)
 		{
-			lift.setPos((int) (lift.getPos() - sJoy.getRawAxis(1) * 150));
+			lift.setPos((int) (lift.getPos() - sJoy.getRawAxis(1) * 350));
 		}
 
 		if (sJoy.getRawButton(3))
@@ -257,7 +256,7 @@ public class Robot extends TimedRobot
 			lift.setPos(500);
 		} else if (sJoy.getRawButton(2))
 		{
-			lift.setPos(20000);
+			lift.setPos(18000);
 		}
 
 		lift.control();
@@ -265,7 +264,7 @@ public class Robot extends TimedRobot
 
 	public void controlIntake()
 	{
-		if (sJoy.getRawButton(5))
+		if (sJoy.getRawButton(5) || rJoy.getRawButton(2))
 		{
 			intake.intake();
 		} else if (sJoy.getRawButton(6))
@@ -279,24 +278,23 @@ public class Robot extends TimedRobot
 
 	public void autonDecision()
 	{
-//		String start = "";
-//		String target = "";
-//		String partnerCapacity = "";
-//		
-//		start = s_chooser.getSelected();
-//		target = t_chooser.getSelected();
-//		partnerCapacity = p_chooser.getSelected();
-//
-//		System.out.println(start);
-//		System.out.println(target);
-//		System.out.println(partnerCapacity);
-//		
-//		if (target.equals("Switch"))
-//		{
+		
+		
+		String start = s_chooser.getSelected();
+		String target = t_chooser.getSelected();
+		String partnerCapacity = p_chooser.getSelected();
+
+		System.out.println(start);
+		System.out.println(target);
+		System.out.println(partnerCapacity);
+		
+		if (target.equals("Switch"))
+		{
 			sw = true;
 			if (fieldLayout.charAt(0) == 'R')
 			{
 				lTrajectory = Pathfinder.readFromCSV(new File("/usr/RSwitch_left_detailed.csv"));
+				System.out.println("loaded");
 				System.out.println(lTrajectory.segments[0].heading);
 				rTrajectory = Pathfinder.readFromCSV(new File("/usr/RSwitch_right_detailed.csv"));
 				System.out.println("right");
@@ -307,59 +305,59 @@ public class Robot extends TimedRobot
 				System.out.println("left");
 			}
 
-//		} else if (target.equals("Scale"))
-//		{
-//			if (fieldLayout.charAt(1) == 'R')
-//			{
-//				if (s_chooser.getSelected().charAt(0) == 'R')
-//				{
-//					lTrajectory = Pathfinder.readFromCSV(new File("/usr/RScaleSame_left_detailed.csv"));
-//					rTrajectory = Pathfinder.readFromCSV(new File("/usr/RScaleSame_right_detailed.csv"));
-//					scale = true;
-//				} else if (s_chooser.getSelected().charAt(0) == 'L')
-//				{
-//					if (p_chooser.getSelected().equals("no"))
-//					{
-//						lTrajectory = Pathfinder.readFromCSV(new File("/usr/RScaleOpp_left_detailed.csv"));
-//						rTrajectory = Pathfinder.readFromCSV(new File("/usr/RScaleOpp_right_detailed.csv"));
-//						scale = true;
-//					} else
-//					{
-//						autoLine = true;
-//					}
-//				}
-//			} else if (fieldLayout.charAt(1) == 'L')
-//			{
-//				if (s_chooser.getSelected().charAt(0) == 'L')
-//				{
-//					lTrajectory = Pathfinder.readFromCSV(new File("/usr/LScaleSame_left_detailed.csv"));
-//					rTrajectory = Pathfinder.readFromCSV(new File("/usr/LScaleSame_right_detailed.csv"));
-//					scale = true;
-//				} else if (s_chooser.getSelected().charAt(0) == 'R')
-//				{
-//					if (p_chooser.getSelected().equals("no"))
-//					{
-//						lTrajectory = Pathfinder.readFromCSV(new File("/usr/LScaleOpp_left_detailed.csv"));
-//						rTrajectory = Pathfinder.readFromCSV(new File("/usr/LScaleOpp_right_detailed.csv"));
-//						scale = true;
-//					} else
-//					{
-//						autoLine = true;
-//					}
-//				}
-//			}
-//		} else if (target.equals("Line"))
-//		{
-//			lTrajectory = Pathfinder.readFromCSV(new File("/usr/AutonLine_left_detailed.csv"));
-//			rTrajectory = Pathfinder.readFromCSV(new File("/usr/AutonLine_right_detailed.csv"));
-//
-//			autoLine = true;
-//		}
-//		if (autoLine)
-//		{
-//			lTrajectory = Pathfinder.readFromCSV(new File("/usr/AutonLine_left_detailed.csv"));
-//			rTrajectory = Pathfinder.readFromCSV(new File("/usr/AutonLine_right_detailed.csv"));
-//
-//		}
+		}else if (target.equals("Scale"))
+		{
+			if (fieldLayout.charAt(1) == 'R')
+			{
+				if (s_chooser.getSelected().charAt(0) == 'R')
+				{
+					lTrajectory = Pathfinder.readFromCSV(new File("/usr/RScaleSame_left_detailed.csv"));
+					rTrajectory = Pathfinder.readFromCSV(new File("/usr/RScaleSame_right_detailed.csv"));
+					scale = true;
+				} else if (s_chooser.getSelected().charAt(0) == 'L')
+				{
+					if (p_chooser.getSelected().equals("no"))
+					{
+						lTrajectory = Pathfinder.readFromCSV(new File("/usr/RScaleOpp_left_detailed.csv"));
+						rTrajectory = Pathfinder.readFromCSV(new File("/usr/RScaleOpp_right_detailed.csv"));
+						scale = true;
+					} else
+					{
+						autoLine = true;
+					}
+				}
+			} else if (fieldLayout.charAt(1) == 'L')
+			{
+				if (s_chooser.getSelected().charAt(0) == 'L')
+				{
+					lTrajectory = Pathfinder.readFromCSV(new File("/usr/LScaleSame_left_detailed.csv"));
+					rTrajectory = Pathfinder.readFromCSV(new File("/usr/LScaleSame_right_detailed.csv"));
+					scale = true;
+				} else if (s_chooser.getSelected().charAt(0) == 'R')
+				{
+					if (p_chooser.getSelected().equals("no"))
+					{
+						lTrajectory = Pathfinder.readFromCSV(new File("/usr/LScaleOpp_left_detailed.csv"));
+						rTrajectory = Pathfinder.readFromCSV(new File("/usr/LScaleOpp_right_detailed.csv"));
+						scale = true;
+					} else
+					{
+						autoLine = true;
+					}
+				}
+			}
+		} else if (target.equals("Line"))
+		{
+			lTrajectory = Pathfinder.readFromCSV(new File("/usr/AutonLine_left_detailed.csv"));
+			rTrajectory = Pathfinder.readFromCSV(new File("/usr/AutonLine_right_detailed.csv"));
+
+			autoLine = true;
+		}
+		if (autoLine)
+		{
+			lTrajectory = Pathfinder.readFromCSV(new File("/usr/AutonLine_left_detailed.csv"));
+			rTrajectory = Pathfinder.readFromCSV(new File("/usr/AutonLine_right_detailed.csv"));
+
+		}
 	}
 }

@@ -8,8 +8,8 @@ public class Intake {
 	
 	public Intake()
 	{
-		lIntake = new TalonSRX(50);
-		rIntake = new TalonSRX(51);
+		lIntake = new TalonSRX(30);
+		rIntake = new TalonSRX(31);
 		
 	}
 	

@@ -12,22 +12,22 @@ public class Lift {
 	
 	public Lift()
 	{
-		lLift = new TalonSRX(48);
-		rLift = new TalonSRX(49);
+		lLift = new TalonSRX(28);
+		rLift = new TalonSRX(29);
 		
 		lLift.follow(rLift);
 		
-		lLift.setInverted(true);
+		lLift.setInverted(false);
 		
 		rLift.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
-		rLift.setSensorPhase(false);
+		rLift.setSensorPhase(true);
 		rLift.setInverted(true);
 		
-		rLift.config_kP(0, .7, 10);
-		rLift.config_kI(0, .000006, 10);
-		rLift.config_kD(0, .3, 10);
+		rLift.config_kP(0, 1.7, 10);
+		rLift.config_kI(0, 0, 10);
+		rLift.config_kD(0, .4, 10);
 		
-		rLift.configForwardSoftLimitThreshold(25000, 10);
+		rLift.configForwardSoftLimitThreshold(19000, 10);
 		rLift.configForwardSoftLimitEnable(true, 10);
 		
 		rLift.configReverseSoftLimitThreshold(-20, 10);
@@ -42,9 +42,9 @@ public class Lift {
 	public void control()
 	{
 		rLift.set(ControlMode.Position, currentSetPos);
-		if(rLift.getSelectedSensorPosition(0) > 24500)
+		if(rLift.getSelectedSensorPosition(0) > 18500 && currentSetPos > 18500)
 		{
-			rLift.set(ControlMode.PercentOutput, 0);
+			rLift.set(ControlMode.PercentOutput, .08);
 			rLift.setNeutralMode(NeutralMode.Brake);
 			lLift.setNeutralMode(NeutralMode.Brake);
 		}

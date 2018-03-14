@@ -15,8 +15,8 @@ public class Winch {
 	
 	public Winch()
 	{
-		lWinch = new TalonSRX(46);
-		rWinch = new TalonSRX(47);
+		lWinch = new TalonSRX(26);
+		rWinch = new TalonSRX(27);
 		
 		lWinch.follow(rWinch);
 		

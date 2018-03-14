@@ -16,7 +16,7 @@ public class Arm
 
 	public Arm()
 	{
-		arm = new TalonSRX(52);
+		arm = new TalonSRX(32);
 
 		arm.setInverted(false);
 		arm.setSensorPhase(true);
@@ -29,7 +29,7 @@ public class Arm
 
 		arm.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Absolute, 0, 10);
 
-		arm.config_kP(0, 5, 10);
+		arm.config_kP(0, 7, 10);
 		arm.config_kI(0, .0002, 10);
 		arm.config_kD(0, 1, 10);
 	}
@@ -41,7 +41,7 @@ public class Arm
 
 	public boolean control(double input)
 	{
-		if (failed == true || arm.getSelectedSensorPosition(0) < -700 || arm.getSelectedSensorPosition(0) > 1000)
+		if (failed == true || arm.getSelectedSensorPosition(0) < -700 || arm.getSelectedSensorPosition(0) > 1100)
 		{
 			arm.configForwardSoftLimitEnable(false, 10);
 			arm.configReverseSoftLimitEnable(false, 10);
