@@ -60,9 +60,8 @@ public class Robot extends TimedRobot
 	@Override
 	public void robotInit()
 	{
-		//CameraServer.getInstance().startAutomaticCapture(0);
-		//CameraServer.getInstance().startAutomaticCapture(1);
-		
+		CameraServer.getInstance().startAutomaticCapture();
+				
 		s_chooser.addObject("Right", "R");
 		s_chooser.addObject("Left", "L");
 		s_chooser.addDefault("Center", "C");
@@ -87,9 +86,6 @@ public class Robot extends TimedRobot
 
 		navX = new AHRS(I2C.Port.kMXP);
 		
-		CameraServer.getInstance().startAutomaticCapture();
-		CameraServer.getInstance().startAutomaticCapture();
-		
 	}
 
 	public void disabledInit()
@@ -110,6 +106,10 @@ public class Robot extends TimedRobot
 	@Override
 	public void autonomousInit()
 	{
+		
+		sw = false;
+		scale = false;
+		autoLine = false;
 		fieldLayout = DriverStation.getInstance().getGameSpecificMessage();
 		autonDecision();
 
@@ -117,21 +117,24 @@ public class Robot extends TimedRobot
 		rEncoder.setTrajectory(rTrajectory);
 
 		lEncoder.configureEncoder(driveTrain.getLeftPos(), 4096, .5);
-		lEncoder.configurePIDVA(1.2, 0, 0, .07, .05);
+		lEncoder.configurePIDVA(2, 0, 0, .05, .05);
 
 		rEncoder.configureEncoder(driveTrain.getRightPos(), 4096, .5);
-		rEncoder.configurePIDVA(1.2, 0, 0, .07, .05);
+		rEncoder.configurePIDVA(2, 0, 0, .05, .05);
 
 		if (sw)
 		{
 			arm.setPos(250);
-			lift.setPos(500);
+			lift.setPos(10000);
 		} else if (scale)
 		{
-			arm.setPos(600);
+			arm.setPos(800);
 			lift.setPos(18000);
 		}
 		navX.zeroYaw();
+		
+		lEncoder.reset();
+		rEncoder.reset();
 
 	}
 
@@ -144,11 +147,15 @@ public class Robot extends TimedRobot
 		double l = lEncoder.calculate(driveTrain.getLeftPos());
 		double r = rEncoder.calculate(driveTrain.getRightPos());
 
-		double gyro = navX.getYaw();
+		double gyro = -navX.getYaw();
 		double heading = Pathfinder.r2d(lEncoder.getHeading());
 
 		double angleDifference = Pathfinder.boundHalfDegrees(heading - gyro);
-		double turn = 100 * (1 / 80) * angleDifference;
+		double turn = 50 * (1 / 80) * angleDifference;
+		
+		SmartDashboard.putNumber("desiredHeading", Pathfinder.boundHalfDegrees(heading));
+		SmartDashboard.putNumber("Gyro", gyro);
+
 
 		driveTrain.setDrive(l + turn, r - turn);
 
@@ -157,14 +164,13 @@ public class Robot extends TimedRobot
 
 		if (lEncoder.isFinished())
 		{
-			intake.outtake();
+			intake.outtake(.5);
 		}
 	}
 
 	public void teleopInit()
 	{
-		arm.setPos(-250);
-		lift.setPos(100);
+		
 	}
 
 	/**
@@ -173,14 +179,12 @@ public class Robot extends TimedRobot
 	@Override
 	public void teleopPeriodic()
 	{
-
-		if (!rJoy.getTrigger())
-		{
-			driveTrain.setDrive(-lJoy.getY(), -rJoy.getY());
-		} else
-		{
-			driveTrain.setDrive(-lJoy.getY() / 2, -rJoy.getY() / 2);
-		}
+		double throttle = -lJoy.getY();
+		double turn = (Math.abs(throttle) < .05) ? lJoy.getZ() * lJoy.getZ() * lJoy.getZ() / Math.abs(lJoy.getZ()) : lJoy.getZ() * (1.6 * Math.abs(throttle));
+		
+		driveTrain.setDrive(throttle + turn, throttle - turn);
+		
+		System.out.println(throttle + " " + turn);
 		
 		controlArm();
 		controlLift();
@@ -223,7 +227,7 @@ public class Robot extends TimedRobot
 			arm.setPos(-150);
 		} else if (sJoy.getRawButton(4))
 		{
-			arm.setPos(200);
+			arm.setPos(500);
 		} else if (sJoy.getRawButton(2))
 		{
 			arm.setPos(600);
@@ -264,12 +268,12 @@ public class Robot extends TimedRobot
 
 	public void controlIntake()
 	{
-		if (sJoy.getRawButton(5) || rJoy.getRawButton(2))
+		if (sJoy.getRawButton(5) || lJoy.getRawButton(5))
 		{
 			intake.intake();
-		} else if (sJoy.getRawButton(6))
+		} else if (sJoy.getRawAxis(3) > .05)
 		{
-			intake.outtake();
+			intake.outtake(sJoy.getRawAxis(3));
 		} else
 		{
 			intake.rest();

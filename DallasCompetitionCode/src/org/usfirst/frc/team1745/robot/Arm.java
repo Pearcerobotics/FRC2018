@@ -10,7 +10,7 @@ public class Arm
 
 	TalonSRX arm;
 
-	int currentSetPos = -250;
+	int currentSetPos = -150;
 	
 	boolean failed = false;
 
@@ -45,7 +45,7 @@ public class Arm
 		{
 			arm.configForwardSoftLimitEnable(false, 10);
 			arm.configReverseSoftLimitEnable(false, 10);
-			arm.set(ControlMode.PercentOutput, input * .667);
+			arm.set(ControlMode.PercentOutput, input);
 			failed = true;
 			arm.setNeutralMode(NeutralMode.Brake);
 			return true;

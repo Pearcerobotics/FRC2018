@@ -39,6 +39,13 @@ public class DriveTrain {
 		lfDrive.setSensorPhase(true);
 		rfDrive.setSensorPhase(true);
 		
+		lfDrive.configVoltageCompSaturation(12, 0);
+		lmDrive.configVoltageCompSaturation(12, 0);
+		lbDrive.configVoltageCompSaturation(12, 0);
+		rfDrive.configVoltageCompSaturation(12, 0);
+		rmDrive.configVoltageCompSaturation(12, 0);
+		rbDrive.configVoltageCompSaturation(12, 0);
+		
 	}
 	
 	public int getLeftPos()

@@ -19,15 +19,15 @@ public class Intake {
 		rIntake.set(ControlMode.PercentOutput, -1);
 	}
 	
-	public void outtake()
+	public void outtake(double input)
 	{
-		lIntake.set(ControlMode.PercentOutput, .3);
-		rIntake.set(ControlMode.PercentOutput, .3);
+			lIntake.set(ControlMode.PercentOutput, input);
+			rIntake.set(ControlMode.PercentOutput, input);
 	}
 
 	public void rest() {
 		// TODO Auto-generated method stub
-		lIntake.set(ControlMode.PercentOutput, 0);
-		rIntake.set(ControlMode.PercentOutput, 0);
+		lIntake.set(ControlMode.PercentOutput, -.01);
+		rIntake.set(ControlMode.PercentOutput, -.01);
 	}
 }
